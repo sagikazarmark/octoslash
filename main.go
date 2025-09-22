@@ -12,11 +12,13 @@ import (
 
 	"github.com/cedar-policy/cedar-go"
 	"github.com/google/go-github/v74/github"
+	githubfs "github.com/sagikazarmark/go-github-fs"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+
 	"github.com/sagikazarmark/octoslash/authz"
 	"github.com/sagikazarmark/octoslash/builtin"
 	"github.com/sagikazarmark/octoslash/slash"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 func init() {
@@ -76,6 +78,8 @@ func main() {
 
 	if isGitHubActions {
 		logger.Debug("running in GitHub Actions")
+
+		fsys = githubfs.New()
 
 		// Try to load GITHUB_WORKSPACE/.github/octoslash
 		// If it doesn't exist, try to use githubfs
