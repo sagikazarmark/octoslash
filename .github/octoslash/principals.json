@@ -1,0 +1,7 @@
+[
+    {
+        "uid": { "type": "User", "id": "1226384" },
+        "attrs": { "login": "sagikazarmark" },
+        "parents": [{ "type": "Role", "id": "Collaborator" }]
+    }
+]

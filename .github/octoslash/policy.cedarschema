@@ -1,0 +1,33 @@
+entity User in Role;
+
+entity Role enum ["Collaborator", "Triager"];
+
+entity Repository in Owner {
+    name: String;
+};
+
+entity Issue in Repository {
+    number: Long;
+};
+
+entity PullRequest in Repository {
+    number: Long;
+};
+
+action Close appliesTo {
+    principal: User,
+    resource: [Issue, PullRequest],
+    context: {}
+};
+
+action Label appliesTo {
+    principal: User,
+    resource: [Issue, PullRequest],
+    context: {}
+};
+
+action RemoveLabel appliesTo {
+    principal: User,
+    resource: [Issue, PullRequest],
+    context: {}
+};
