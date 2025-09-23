@@ -1,20 +1,25 @@
 package builtin
 
 import (
-	"fmt"
+	"log/slog"
 
 	"github.com/google/go-github/v74/github"
 	"github.com/spf13/cobra"
 )
 
-func NewCloseCommand(event github.IssueCommentEvent) *cobra.Command {
+func NewCloseCommand(client *github.Client, event github.IssueCommentEvent) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "close",
 		Short: "Close a file",
 		Long:  "Close a file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("closing issue", event.GetIssue().GetNumber())
-			return nil
+			slog.Info("closing issue", slog.Int("number", event.GetIssue().GetNumber()))
+
+			_, _, err := client.Issues.Edit(cmd.Context(), event.GetRepo().GetOwner().GetLogin(), event.GetRepo().GetName(), event.GetIssue().GetNumber(), &github.IssueRequest{
+				State: github.Ptr("closed"),
+			})
+
+			return err
 		},
 	}
 

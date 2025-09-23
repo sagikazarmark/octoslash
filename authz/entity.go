@@ -1,89 +1,89 @@
 package authz
 
 import (
-	"fmt"
+	"encoding/json"
+	"errors"
+	"io/fs"
 
 	"github.com/cedar-policy/cedar-go"
 	"github.com/google/go-github/v74/github"
 )
 
-const (
-	User cedar.EntityType = "User"
+var _ cedar.EntityGetter = (EntityGetters)(nil)
 
-	Repository cedar.EntityType = "Repository"
-	Owner      cedar.EntityType = "Owner"
+// EntityGetters is a list of [cedar.EntityGetter] implementations.
+type EntityGetters []cedar.EntityGetter
 
-	Issue       cedar.EntityType = "Issue"
-	PullRequest cedar.EntityType = "PullRequest"
+func (g EntityGetters) Get(uid cedar.EntityUID) (cedar.Entity, bool) {
+	for _, getter := range g {
+		entity, ok := getter.Get(uid)
+		if ok {
+			return entity, true
+		}
+	}
 
-	Role cedar.EntityType = "Role"
-
-	Action cedar.EntityType = "Action"
-)
-
-func NewUserID(user *github.User) cedar.EntityUID {
-	return NewEntityUID(User, user)
+	return cedar.Entity{}, false
 }
 
-func NewIssueOrPullRequestID(issue *github.Issue) cedar.EntityUID {
-	t := Issue
-
-	if issue.IsPullRequest() {
-		t = PullRequest
-	}
-
-	return NewEntityUID(t, issue)
+type EntityLoader interface {
+	LoadEntities() (cedar.EntityGetter, error)
 }
 
-func NewEntityUID(entityType cedar.EntityType, entity interface{ GetID() int64 }) cedar.EntityUID {
-	return cedar.NewEntityUID(entityType, cedar.String(fmt.Sprintf("%d", entity.GetID())))
+type EntityLoaders []EntityLoader
+
+func (l EntityLoaders) LoadEntities() (cedar.EntityGetter, error) {
+	var entities EntityGetters
+
+	for _, loader := range l {
+		loadedEntities, err := loader.LoadEntities()
+		if err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, loadedEntities)
+	}
+
+	return entities, nil
 }
 
-func NewOwner(owner *github.User) cedar.Entity {
-	uid := NewEntityUID(Owner, owner)
-
-	return cedar.Entity{
-		UID: uid,
-		Attributes: cedar.NewRecord(cedar.RecordMap{
-			cedar.String("login"): cedar.String(owner.GetLogin()),
-		}),
-	}
+type EventEntityLoader struct {
+	Event github.IssueCommentEvent
 }
 
-func NewRepository(repo *github.Repository) cedar.Entity {
-	uid := NewEntityUID(Repository, repo)
+func (l EventEntityLoader) LoadEntities() (cedar.EntityGetter, error) {
+	entities := cedar.EntityMap{}
 
-	return cedar.Entity{
-		UID:     uid,
-		Parents: cedar.NewEntityUIDSet(NewEntityUID(Owner, repo.GetOwner())),
-		Attributes: cedar.NewRecord(cedar.RecordMap{
-			cedar.String("name"): cedar.String(repo.GetName()),
-		}),
-	}
+	owner := NewOwner(l.Event.GetRepo().GetOwner())
+	repo := NewRepository(l.Event.GetRepo())
+	issue := NewIssueOrPullRequest(l.Event.GetIssue(), l.Event.GetRepo())
+
+	entities[owner.UID] = owner
+	entities[repo.UID] = repo
+	entities[issue.UID] = issue
+
+	return entities, nil
 }
 
-func NewIssueOrPullRequest(issue *github.Issue, repo *github.Repository) cedar.Entity {
-	uid := NewIssueOrPullRequestID(issue)
+type FileEntityLoader struct {
+	Fsys fs.FS
+}
 
-	attributes := cedar.RecordMap{
-		cedar.String("number"): cedar.Long(issue.GetNumber()),
+func (l FileEntityLoader) LoadEntities() (cedar.EntityGetter, error) {
+	var entities cedar.EntityMap
+
+	file, err := l.Fsys.Open("principals.json")
+	if errors.Is(err, fs.ErrNotExist) {
+		return entities, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&entities); err != nil {
+		return nil, err
 	}
 
-	var labels []cedar.Value
-
-	for _, label := range issue.Labels {
-		labels = append(labels, cedar.String(label.GetName()))
-	}
-
-	if len(labels) > 0 {
-		attributes[cedar.String("labels")] = cedar.NewSet(labels...)
-	}
-
-	entity := cedar.Entity{
-		UID:        uid,
-		Parents:    cedar.NewEntityUIDSet(NewEntityUID(Repository, issue.GetRepository())),
-		Attributes: cedar.NewRecord(attributes),
-	}
-
-	return entity
+	return entities, nil
 }

@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/cedar-policy/cedar-go"
@@ -26,6 +27,7 @@ func init() {
 }
 
 func main() {
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 	logger := slog.Default()
 
 	flags := pflag.NewFlagSet("octoslash", pflag.ExitOnError)
@@ -35,6 +37,14 @@ func main() {
 
 	var eventPath string
 	flags.StringVar(&eventPath, "event-path", os.Getenv("GITHUB_EVENT_PATH"), "")
+
+	defaultConfigPath := filepath.Join(".github", "octoslash")
+	if ws := os.Getenv("GITHUB_WORKSPACE"); ws != "" {
+		defaultConfigPath = filepath.Join(ws, defaultConfigPath)
+	}
+
+	var configPath string
+	flags.StringVar(&configPath, "config-path", defaultConfigPath, "")
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
@@ -72,40 +82,65 @@ func main() {
 		os.Exit(1)
 	}
 
-	isGitHubActions := os.Getenv("GITHUB_ACTIONS") == "true"
+	fsys, err := openConfigPath(configPath)
+	if err != nil {
+		logger.Error(fmt.Sprintf("opening octoslash config: %s", err.Error()))
 
-	var fsys fs.FS
+		os.Exit(1)
+	}
 
-	if isGitHubActions {
-		logger.Debug("running in GitHub Actions")
+	client := github.NewClient(nil)
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		client = client.WithAuthToken(token)
+	}
 
-		fsys = githubfs.New()
+	// Try to use the GitHub filesystem
+	if fsys == nil && os.Getenv("GITHUB_ACTIONS") == "true" {
+		githubFS := githubfs.New(
+			githubfs.WithClient(client),
+			githubfs.WithRepository(event.GetRepo().GetOwner().GetLogin(), event.GetRepo().GetName()),
+		)
 
-		// Try to load GITHUB_WORKSPACE/.github/octoslash
-		// If it doesn't exist, try to use githubfs
-	} else {
-		root, err := os.OpenRoot(".github/octoslash")
-		if err != nil {
-			logger.Error(fmt.Sprintf("opening octoslash config: %s", err.Error()))
+		_, err := fs.Stat(githubFS, ".github/octoslash")
+		if errors.Is(err, fs.ErrNotExist) {
+			fsys = nil
+		} else if err != nil {
+			logger.Error(fmt.Sprintf("opening octoslash config from GitHub Actions: %s", err.Error()))
 
 			os.Exit(1)
+		} else {
+			fsys = githubFS
 		}
-
-		fsys = root.FS()
 	}
 
-	loader := authz.FilePolicyLoader{
-		Fsys: fsys,
+	var policyLoaders authz.PolicyLoaders
+	entityLoaders := authz.EntityLoaders{
+		authz.EventEntityLoader{Event: event},
 	}
 
-	policies, err := loader.LoadPolicies()
+	if fsys != nil {
+		policyLoaders = append(policyLoaders, authz.FilePolicyLoader{
+			Fsys: fsys,
+		})
+		entityLoaders = append(entityLoaders, authz.FileEntityLoader{
+			Fsys: fsys,
+		})
+	} else {
+		logger.Debug("no filesystem available, skipping policy and entity loading from filesystem")
+	}
+
+	policies, err := policyLoaders.LoadPolicies()
 	if err != nil {
-		panic(err)
+		logger.Error(fmt.Sprintf("loading policies: %s", err.Error()))
+
+		os.Exit(1)
 	}
 
-	e, err := entities(event, fsys)
+	entities, err := entityLoaders.LoadEntities()
 	if err != nil {
-		panic(err)
+		logger.Error(fmt.Sprintf("loading entities: %s", err.Error()))
+
+		os.Exit(1)
 	}
 
 	newCommand := func(ctx context.Context, args []string) *cobra.Command {
@@ -114,11 +149,11 @@ func main() {
 			Short: "A command-line tool for interacting with GitHub",
 			Long:  "octoslash is a command-line tool for interacting with GitHub.",
 			PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-				// cmd.SilenceErrors = true
+				cmd.SilenceErrors = true
 				cmd.SilenceUsage = true
 				req := authz.NewRequest(cmd, event)
 
-				ok, _ := cedar.Authorize(policies, e, req)
+				ok, _ := cedar.Authorize(policies, entities, req)
 				if !ok {
 					return fmt.Errorf("principal %s is not authorized to perform %s on %s", req.Principal, req.Action, req.Resource)
 				}
@@ -127,8 +162,11 @@ func main() {
 			},
 		}
 
-		rootCmd.AddCommand(builtin.NewCloseCommand(event))
-		rootCmd.AddCommand(builtin.NewLabelCommand(event))
+		rootCmd.PersistentFlags().Bool("dry-run", false, "Do not perform any actions")
+
+		rootCmd.AddCommand(builtin.NewCloseCommand(client, event))
+		rootCmd.AddCommand(builtin.NewLabelCommand(client, event))
+		rootCmd.AddCommand(builtin.NewRemoveLabelCommand(client, event))
 
 		rootCmd.SetArgs(args)
 		rootCmd.SetContext(ctx)
@@ -166,39 +204,13 @@ func main() {
 	}
 }
 
-func entities(event github.IssueCommentEvent, fsys fs.FS) (cedar.EntityGetter, error) {
-	entities, err := loadPrincipals(fsys)
-	if err != nil {
+func openConfigPath(configPath string) (fs.FS, error) {
+	root, err := os.OpenRoot(configPath)
+	if err != nil && errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	} else if err != nil {
 		return nil, err
 	}
 
-	owner := authz.NewOwner(event.GetRepo().GetOwner())
-	repo := authz.NewRepository(event.GetRepo())
-	issue := authz.NewIssueOrPullRequest(event.GetIssue(), event.GetRepo())
-
-	entities[owner.UID] = owner
-	entities[repo.UID] = repo
-	entities[issue.UID] = issue
-
-	return entities, nil
-}
-
-func loadPrincipals(fsys fs.FS) (cedar.EntityMap, error) {
-	var entities cedar.EntityMap
-
-	file, err := fsys.Open("principals.json")
-	if errors.Is(err, fs.ErrNotExist) {
-		return entities, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
-	if err := decoder.Decode(&entities); err != nil {
-		return nil, err
-	}
-
-	return entities, nil
+	return root.FS(), nil
 }

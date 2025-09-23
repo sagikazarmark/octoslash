@@ -4,10 +4,39 @@ import (
 	"errors"
 	"io"
 	"io/fs"
+	"iter"
 	"path/filepath"
 
 	"github.com/cedar-policy/cedar-go"
+	"github.com/sagikazarmark/seq"
 )
+
+type PolicyLoader interface {
+	LoadPolicies() (cedar.PolicyIterator, error)
+}
+
+type PolicyLoaders []PolicyLoader
+
+func (l PolicyLoaders) LoadPolicies() (cedar.PolicyIterator, error) {
+	iterators := make([]iter.Seq2[cedar.PolicyID, *cedar.Policy], 0, len(l))
+
+	for _, loader := range l {
+		iter, err := loader.LoadPolicies()
+		if err != nil {
+			return nil, err
+		}
+
+		iterators = append(iterators, iter.All())
+	}
+
+	return policyIterator(seq.Chain2(iterators...)), nil
+}
+
+type policyIterator iter.Seq2[cedar.PolicyID, *cedar.Policy]
+
+func (i policyIterator) All() iter.Seq2[cedar.PolicyID, *cedar.Policy] {
+	return iter.Seq2[cedar.PolicyID, *cedar.Policy](i)
+}
 
 type FilePolicyLoader struct {
 	Fsys fs.FS
