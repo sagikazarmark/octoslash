@@ -1,57 +1,105 @@
 package builtin
 
 import (
-	"fmt"
+	"context"
 	"log/slog"
 
 	"github.com/google/go-github/v74/github"
 	"github.com/spf13/cobra"
 )
 
-func NewLabelCommand(client *github.Client, event github.IssueCommentEvent) *cobra.Command {
+func NewLabelCommand(event github.IssueCommentEvent, client *github.Client, logger *slog.Logger) *cobra.Command {
+	command := labelCommand{
+		event:  event,
+		client: client,
+		logger: logger,
+	}
+
 	cmd := &cobra.Command{
 		Use:   "label",
-		Short: "Label an issue",
-		Long:  "Label an issue",
+		Short: "Label an issue or pull request",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			slog.Info("adding label", slog.Int("number", event.GetIssue().GetNumber()))
-
-			if len(args) == 0 {
-				return fmt.Errorf("no labels provided")
-			}
-
-			_, _, err := client.Issues.AddLabelsToIssue(cmd.Context(), event.GetRepo().GetOwner().GetLogin(), event.GetRepo().GetName(), event.GetIssue().GetNumber(), []string{args[0]})
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return command.run(cmd.Context(), args[0])
 		},
 	}
 
 	return cmd
 }
 
-func NewRemoveLabelCommand(client *github.Client, event github.IssueCommentEvent) *cobra.Command {
+type labelCommand struct {
+	event  github.IssueCommentEvent
+	client *github.Client
+	logger *slog.Logger
+}
+
+func (c labelCommand) run(ctx context.Context, label string) error {
+	issue := c.event.GetIssue()
+	repo := c.event.GetRepo()
+
+	logger := c.logger.With(slog.Int("number", issue.GetNumber()))
+
+	logger.Info("adding label to issue", slog.String("label", label))
+
+	_, _, err := c.client.Issues.AddLabelsToIssue(
+		ctx,
+		repo.GetOwner().GetLogin(),
+		repo.GetName(),
+		issue.GetNumber(),
+		[]string{label},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewRemoveLabelCommand(event github.IssueCommentEvent, client *github.Client, logger *slog.Logger) *cobra.Command {
+	command := labelCommand{
+		event:  event,
+		client: client,
+		logger: logger,
+	}
+
 	cmd := &cobra.Command{
 		Use:   "remove-label",
-		Short: "Remove label from an issue",
-		Long:  "Remove label from an issue",
+		Short: "Remove a label from an issue or pull request",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			slog.Info("removing label", slog.Int("number", event.GetIssue().GetNumber()))
-
-			if len(args) == 0 {
-				return fmt.Errorf("no labels provided")
-			}
-
-			_, err := client.Issues.RemoveLabelForIssue(cmd.Context(), event.GetRepo().GetOwner().GetLogin(), event.GetRepo().GetName(), event.GetIssue().GetNumber(), args[0])
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return command.run(cmd.Context(), args[0])
 		},
 	}
 
 	return cmd
+}
+
+type removeLabelCommand struct {
+	event  github.IssueCommentEvent
+	client *github.Client
+	logger *slog.Logger
+}
+
+func (c removeLabelCommand) run(ctx context.Context, label string) error {
+	issue := c.event.GetIssue()
+	repo := c.event.GetRepo()
+
+	logger := c.logger.With(
+		slog.Int("number", issue.GetNumber()),
+	)
+
+	logger.Info("removing label from issue", slog.String("label", label))
+
+	_, err := c.client.Issues.RemoveLabelForIssue(
+		ctx,
+		repo.GetOwner().GetLogin(),
+		repo.GetName(),
+		issue.GetNumber(),
+		label,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
