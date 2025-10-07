@@ -14,22 +14,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@9280e7aca88deada44c930f1e2c78e21c3ae3edd # v31.7.0
-
-      - name: Configure cachix
-        uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
+      - name: Set up environment
+        uses: ./.github/actions/devenv/
         with:
-          name: devenv
-
-      - name: Install devenv
-        run: nix profile add nixpkgs#devenv
-
-      - name: Build dev environment
-        run: devenv build shell
+          build: "true"
 
       - name: Build
-        run: devenv shell -- just build
+        shell: devenv shell bash -- -e {0}
+        run: just build
 
   test:
     name: Test
@@ -39,22 +31,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@9280e7aca88deada44c930f1e2c78e21c3ae3edd # v31.7.0
-
-      - name: Configure cachix
-        uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
+      - name: Set up environment
+        uses: ./.github/actions/devenv/
         with:
-          name: devenv
-
-      - name: Install devenv
-        run: nix profile add nixpkgs#devenv
-
-      - name: Build dev environment
-        run: devenv build shell
+          build: "true"
 
       - name: Test
-        run: devenv shell -- just test
+        shell: devenv shell bash -- -e {0}
+        run: just test
 
   lint:
     name: Lint
@@ -64,22 +48,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@9280e7aca88deada44c930f1e2c78e21c3ae3edd # v31.7.0
-
-      - name: Configure cachix
-        uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
+      - name: Set up environment
+        uses: ./.github/actions/devenv/
         with:
-          name: devenv
-
-      - name: Install devenv
-        run: nix profile add nixpkgs#devenv
-
-      - name: Build dev environment
-        run: devenv build shell
+          build: "true"
 
       - name: Lint
-        run: devenv shell -- just lint
+        shell: devenv shell bash -- -e {0}
+        run: just lint
 
   dependency-review:
     name: Dependency review

@@ -1,0 +1,45 @@
+name: Setup Devenv
+description: "Set up Devenv"
+author: sagikazarmark
+
+branding:
+  icon: command
+  color: blue
+
+inputs:
+  use-flake:
+    description: "Install devenv from flake"
+    required: false
+    default: "false"
+  build:
+    description: "Build the environment"
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Install Nix
+      uses: cachix/install-nix-action@9280e7aca88deada44c930f1e2c78e21c3ae3edd # v31.7.0
+
+    - name: Configure cachix
+      uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
+      with:
+        name: devenv
+
+    - name: Install devenv from nixpkgs
+      shell: bash
+      run: nix profile add nixpkgs#devenv
+      if: inputs.use-flake != 'true'
+
+    - name: Install devenv from flake
+      shell: bash
+      run: nix profile add --accept-flake-config github:cachix/devenv/latest#devenv
+      env:
+        NIX_CONFIG: "accept-flake-config = true"
+      if: inputs.use-flake == 'true'
+
+    - name: Build dev environment
+      shell: bash
+      run: devenv build shell
+      if: inputs.build == 'true'
