@@ -79,13 +79,6 @@ func (a Application) Main(os Options) error {
 		return fmt.Errorf("loading event: %w", err)
 	}
 
-	// client := newClient(os.Getenv("GITHUB_TOKEN"))
-
-	// fsys, err := DefaultFilesystem(os, configPath, event.GetRepo(), client)
-	// if err != nil {
-	// 	return fmt.Errorf("opening octoslash config: %w", err)
-	// }
-
 	var localFS fs.FS
 
 	handler, err := app.InitializeEventHandler(
