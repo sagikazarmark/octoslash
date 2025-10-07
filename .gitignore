@@ -6,3 +6,5 @@ devenv.local.nix
 
 # Added by goreleaser init:
 dist/
+
+/octoslash
