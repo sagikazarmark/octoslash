@@ -46,7 +46,7 @@ func (c closeCommand) run(ctx context.Context, reason string) error {
 	issue := c.event.GetIssue()
 	repo := c.event.GetRepo()
 
-	c.logger.Info("closing issue", slog.Int("number", issue.GetNumber()), slog.String("reason", ""))
+	c.logger.Info("closing issue", slog.Int("number", issue.GetNumber()), slog.String("reason", reason))
 
 	req := &github.IssueRequest{
 		State: github.Ptr("closed"),
