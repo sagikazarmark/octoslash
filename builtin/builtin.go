@@ -4,13 +4,17 @@ import (
 	"log/slog"
 
 	"github.com/google/go-github/v74/github"
-	"github.com/sagikazarmark/octoslash/command"
 	"github.com/spf13/cobra"
+
+	"github.com/sagikazarmark/octoslash/command"
 )
 
 type Provider struct{}
 
-func (p Provider) NewCommandProvider(client *github.Client, logger *slog.Logger) command.CommandProvider {
+func (p Provider) NewCommandProvider(
+	client *github.Client,
+	logger *slog.Logger,
+) command.CommandProvider {
 	return CommandProvider{
 		Client: client,
 		Logger: logger,
