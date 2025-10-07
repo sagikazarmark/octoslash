@@ -1,6 +1,6 @@
 module github.com/sagikazarmark/octoslash
 
-go 1.25rc2
+go 1.25.0
 
 require (
 	github.com/cedar-policy/cedar-go v1.2.6

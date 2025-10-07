@@ -3,3 +3,6 @@
 /.direnv/
 devenv.local.nix
 .pre-commit-config.yaml
+
+# Added by goreleaser init:
+dist/
