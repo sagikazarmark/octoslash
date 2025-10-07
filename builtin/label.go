@@ -56,7 +56,7 @@ func (c labelCommand) run(ctx context.Context, label string) error {
 }
 
 func NewRemoveLabelCommand(event github.IssueCommentEvent, client *github.Client, logger *slog.Logger) *cobra.Command {
-	command := labelCommand{
+	command := removeLabelCommand{
 		event:  event,
 		client: client,
 		logger: logger,
