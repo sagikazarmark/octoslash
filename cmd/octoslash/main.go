@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/sagikazarmark/octoslash/builtin"
 	"github.com/sagikazarmark/octoslash/cli"
@@ -17,5 +18,6 @@ func main() {
 	err := app.Main(opts)
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
 	}
 }
