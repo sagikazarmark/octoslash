@@ -29,8 +29,9 @@ github.com/sagikazarmark/seq v0.1.0 h1:CW+Ol4yI5MZfbRqzzAdEfJf31ERCF9jihOpqMsLKX
 github.com/sagikazarmark/seq v0.1.0/go.mod h1:lrISesxJK62Kl8maJtvHFkSxzF7IdyhAbg6PT9s5ZYY=
 github.com/spf13/cobra v1.10.1 h1:lJeBwCfmrnXthfAupyUTzJ/J4Nc1RsHC/mSRU2dll/s=
 github.com/spf13/cobra v1.10.1/go.mod h1:7SmJGaTHFVBY0jW4NXGluQoLvhqFQM+6XSKD+P4XaB0=
-github.com/spf13/pflag v1.0.9 h1:9exaQaMOCwffKiiiYk6/BndUBv+iRViNW+4lEMi0PvY=
 github.com/spf13/pflag v1.0.9/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
+github.com/spf13/pflag v1.0.10 h1:4EBh2KAYBwaONj6b2Ye1GiHfwjqyROoF4RwYO+vPwFk=
+github.com/spf13/pflag v1.0.10/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
 github.com/wireinject/wire v0.7.1 h1:Pp4nGa9yOmEkvCzpjbaJdp6ONn1Jofx2BZxjSSS4gHU=
 github.com/wireinject/wire v0.7.1/go.mod h1:W62/697OJgU47GpHlzajrWlBs0Dte/U1sAbEE/0ECes=
 golang.org/x/exp v0.0.0-20220921023135-46d9e7742f1e h1:Ctm9yurWsg7aWwIpH9Bnap/IdSVxixymIb3MhiMEQQA=

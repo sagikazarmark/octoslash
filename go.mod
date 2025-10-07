@@ -8,7 +8,7 @@ require (
 	github.com/sagikazarmark/go-github-fs v0.1.0
 	github.com/sagikazarmark/seq v0.1.0
 	github.com/spf13/cobra v1.10.1
-	github.com/spf13/pflag v1.0.9
+	github.com/spf13/pflag v1.0.10
 	github.com/wireinject/wire v0.7.1
 	mvdan.cc/sh/v3 v3.12.0
 )
