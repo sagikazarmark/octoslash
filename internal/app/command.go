@@ -5,11 +5,15 @@ import (
 	"log/slog"
 
 	"github.com/google/go-github/v74/github"
+
 	"github.com/sagikazarmark/octoslash"
 	"github.com/sagikazarmark/octoslash/command"
 )
 
-func NewCommandDispatcher(provider Provider, def LazyResult[octoslash.CommandDispatcher]) (octoslash.CommandDispatcher, error) {
+func NewCommandDispatcher(
+	provider Provider,
+	def LazyResult[octoslash.CommandDispatcher],
+) (octoslash.CommandDispatcher, error) {
 	switch p := provider.(type) {
 	case interface {
 		NewCommandDispatcher() octoslash.CommandDispatcher
@@ -21,7 +25,10 @@ func NewCommandDispatcher(provider Provider, def LazyResult[octoslash.CommandDis
 	}
 }
 
-func DefaultCommandDispatcher(authorizer LazyResult[command.Authorizer], commandProvider LazyResult[command.CommandProvider]) LazyResult[octoslash.CommandDispatcher] {
+func DefaultCommandDispatcher(
+	authorizer LazyResult[command.Authorizer],
+	commandProvider LazyResult[command.CommandProvider],
+) LazyResult[octoslash.CommandDispatcher] {
 	return func() (octoslash.CommandDispatcher, error) {
 		authorizer, err := authorizer.Resolve()
 		if err != nil {
@@ -40,7 +47,11 @@ func DefaultCommandDispatcher(authorizer LazyResult[command.Authorizer], command
 	}
 }
 
-func NewCommandProvider(provider Provider, client *github.Client, logger *slog.Logger) LazyResult[command.CommandProvider] {
+func NewCommandProvider(
+	provider Provider,
+	client *github.Client,
+	logger *slog.Logger,
+) LazyResult[command.CommandProvider] {
 	return func() (command.CommandProvider, error) {
 		switch p := provider.(type) {
 		case interface {

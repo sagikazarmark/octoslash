@@ -8,7 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewLabelCommand(event github.IssueCommentEvent, client *github.Client, logger *slog.Logger) *cobra.Command {
+func NewLabelCommand(
+	event github.IssueCommentEvent,
+	client *github.Client,
+	logger *slog.Logger,
+) *cobra.Command {
 	command := labelCommand{
 		event:  event,
 		client: client,
@@ -55,7 +59,11 @@ func (c labelCommand) run(ctx context.Context, label string) error {
 	return nil
 }
 
-func NewRemoveLabelCommand(event github.IssueCommentEvent, client *github.Client, logger *slog.Logger) *cobra.Command {
+func NewRemoveLabelCommand(
+	event github.IssueCommentEvent,
+	client *github.Client,
+	logger *slog.Logger,
+) *cobra.Command {
 	command := removeLabelCommand{
 		event:  event,
 		client: client,

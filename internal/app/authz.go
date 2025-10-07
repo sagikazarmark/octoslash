@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/cedar-policy/cedar-go"
+
 	"github.com/sagikazarmark/octoslash/authz"
 	"github.com/sagikazarmark/octoslash/command"
 )
@@ -75,7 +76,11 @@ func newPolicyIterator(
 	}
 }
 
-func newPolicyLoader(provider Provider, def LazyResult[authz.PolicyLoader], logger *slog.Logger) (authz.PolicyLoader, error) {
+func newPolicyLoader(
+	provider Provider,
+	def LazyResult[authz.PolicyLoader],
+	logger *slog.Logger,
+) (authz.PolicyLoader, error) {
 	switch p := provider.(type) {
 	case interface {
 		PolicyLoader() authz.PolicyLoader
@@ -126,7 +131,11 @@ func DefaultPolicyLoader(fsys LazyResult[fs.FS]) LazyResult[authz.PolicyLoader] 
 	}
 }
 
-func newEntityGetter(provider Provider, def LazyResult[authz.EntityLoader], logger *slog.Logger) (cedar.EntityGetter, error) {
+func newEntityGetter(
+	provider Provider,
+	def LazyResult[authz.EntityLoader],
+	logger *slog.Logger,
+) (cedar.EntityGetter, error) {
 	switch p := provider.(type) {
 	case interface {
 		EntityGetter() cedar.EntityGetter
@@ -153,7 +162,11 @@ func newEntityGetter(provider Provider, def LazyResult[authz.EntityLoader], logg
 	}
 }
 
-func newEntityLoader(provider Provider, def LazyResult[authz.EntityLoader], logger *slog.Logger) (authz.EntityLoader, error) {
+func newEntityLoader(
+	provider Provider,
+	def LazyResult[authz.EntityLoader],
+	logger *slog.Logger,
+) (authz.EntityLoader, error) {
 	switch p := provider.(type) {
 	case interface {
 		EntityLoader() authz.EntityLoader

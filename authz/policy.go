@@ -106,7 +106,6 @@ func (l FilePolicyLoader) LoadPolicies() (cedar.PolicyIterator, error) {
 
 			policies.Add(cedar.PolicyID(base[:len(base)-len(ext)]), policy)
 		}
-
 	} else if !errors.Is(err, fs.ErrNotExist) {
 		return nil, err
 	}

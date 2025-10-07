@@ -8,7 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCloseCommand(event github.IssueCommentEvent, client *github.Client, logger *slog.Logger) *cobra.Command {
+func NewCloseCommand(
+	event github.IssueCommentEvent,
+	client *github.Client,
+	logger *slog.Logger,
+) *cobra.Command {
 	command := closeCommand{
 		event:  event,
 		client: client,

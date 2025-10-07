@@ -23,7 +23,11 @@ type CommandProvider interface {
 	NewCommand(event github.IssueCommentEvent) *cobra.Command
 }
 
-func (d CobraDispatcher) Dispatch(ctx context.Context, event github.IssueCommentEvent, args []string) error {
+func (d CobraDispatcher) Dispatch(
+	ctx context.Context,
+	event github.IssueCommentEvent,
+	args []string,
+) error {
 	cmd := d.newCommand(event, args)
 
 	return cmd.ExecuteContext(ctx)

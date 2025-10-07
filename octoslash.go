@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v74/github"
+
 	"github.com/sagikazarmark/octoslash/parser"
 )
 
@@ -41,7 +42,10 @@ func (h EventHandler) Handle(ctx context.Context, event github.IssueCommentEvent
 	for _, rawCommand := range rawCommands {
 		args, err := p.Parse(strings.NewReader(rawCommand))
 		if err != nil {
-			logger.Error(fmt.Sprintf("parsing command: %s", err.Error()), slog.String("command", rawCommand))
+			logger.Error(
+				fmt.Sprintf("parsing command: %s", err.Error()),
+				slog.String("command", rawCommand),
+			)
 
 			// TODO: make this behavior configurable
 			continue

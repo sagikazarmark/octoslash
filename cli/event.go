@@ -8,7 +8,11 @@ import (
 	"github.com/google/go-github/v74/github"
 )
 
-func LoadEventFromFile(os Options, eventName string, eventPath string) (github.IssueCommentEvent, error) {
+func LoadEventFromFile(
+	os Options,
+	eventName string,
+	eventPath string,
+) (github.IssueCommentEvent, error) {
 	file, err := os.Open(eventPath)
 	if err != nil {
 		return github.IssueCommentEvent{}, fmt.Errorf("loading event: %w", err)

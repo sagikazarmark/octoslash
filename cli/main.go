@@ -9,9 +9,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sagikazarmark/octoslash/internal/app"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/sagikazarmark/octoslash/internal/app"
 )
 
 func init() {

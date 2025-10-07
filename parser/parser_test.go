@@ -50,9 +50,17 @@ func TestParser_Parse(t *testing.T) {
 			expected: []string{"echo", "$(date)"},
 		},
 		{
-			name:     "complex command",
-			input:    `echo "hello \"world\"" $HOME --foo bar --baz=$(pwd) test\ file`,
-			expected: []string{"echo", "hello \"world\"", "$HOME", "--foo", "bar", "--baz=$(pwd)", "test\\ file"},
+			name:  "complex command",
+			input: `echo "hello \"world\"" $HOME --foo bar --baz=$(pwd) test\ file`,
+			expected: []string{
+				"echo",
+				"hello \"world\"",
+				"$HOME",
+				"--foo",
+				"bar",
+				"--baz=$(pwd)",
+				"test\\ file",
+			},
 		},
 		{
 			name:    "empty input",

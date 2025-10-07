@@ -16,7 +16,11 @@ type Authorizer struct {
 	Logger *slog.Logger
 }
 
-func NewAuthorizer(policies cedar.PolicyIterator, entities cedar.EntityGetter, logger *slog.Logger) Authorizer {
+func NewAuthorizer(
+	policies cedar.PolicyIterator,
+	entities cedar.EntityGetter,
+	logger *slog.Logger,
+) Authorizer {
 	return Authorizer{
 		Policies: policies,
 		Entities: entities,
@@ -24,7 +28,11 @@ func NewAuthorizer(policies cedar.PolicyIterator, entities cedar.EntityGetter, l
 	}
 }
 
-func (a Authorizer) Authorize(ctx context.Context, event github.IssueCommentEvent, action string) error {
+func (a Authorizer) Authorize(
+	ctx context.Context,
+	event github.IssueCommentEvent,
+	action string,
+) error {
 	request := newRequest(event, action)
 
 	a.Logger.Debug(
