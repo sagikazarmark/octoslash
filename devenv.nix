@@ -1,13 +1,7 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 
 {
   cachix.pull = [ "sagikazarmark-dev" ];
-
-  overlays = [
-    (final: prev: {
-      dagger = inputs.dagger.packages.${final.system}.dagger;
-    })
-  ];
 
   languages = {
     go = {
@@ -20,6 +14,5 @@
     just
     golangci-lint
     goreleaser
-    dagger
   ];
 }
