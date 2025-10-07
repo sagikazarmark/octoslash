@@ -1,4 +1,4 @@
-package slash
+package parser
 
 import (
 	"errors"

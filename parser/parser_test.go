@@ -1,10 +1,10 @@
-package slash_test
+package parser_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/sagikazarmark/octoslash/slash"
+	"github.com/sagikazarmark/octoslash/parser"
 )
 
 func TestParser_Parse(t *testing.T) {
@@ -68,7 +68,7 @@ func TestParser_Parse(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			p := slash.NewParser()
+			p := parser.NewParser()
 			args, err := p.Parse(strings.NewReader(testCase.input))
 
 			if testCase.wantErr {

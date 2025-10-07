@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v74/github"
-	"github.com/sagikazarmark/octoslash/slash"
+	"github.com/sagikazarmark/octoslash/parser"
 )
 
 type EventHandler struct {
@@ -28,7 +28,7 @@ type ErrorHandler interface {
 func (h EventHandler) Handle(ctx context.Context, event github.IssueCommentEvent) error {
 	logger := slog.Default()
 
-	rawCommands := slash.ScanString(event.GetComment().GetBody())
+	rawCommands := parser.ScanString(event.GetComment().GetBody())
 
 	if len(rawCommands) == 0 {
 		logger.Info("no commands to run")
@@ -36,10 +36,10 @@ func (h EventHandler) Handle(ctx context.Context, event github.IssueCommentEvent
 		return nil
 	}
 
-	parser := slash.NewParser()
+	p := parser.NewParser()
 
 	for _, rawCommand := range rawCommands {
-		args, err := parser.Parse(strings.NewReader(rawCommand))
+		args, err := p.Parse(strings.NewReader(rawCommand))
 		if err != nil {
 			logger.Error(fmt.Sprintf("parsing command: %s", err.Error()), slog.String("command", rawCommand))
 
