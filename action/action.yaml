@@ -1,0 +1,98 @@
+name: 'Octoslash Action'
+description: 'Download and run octoslash binary with GitHub token'
+author: 'sagikazarmark'
+
+inputs:
+  version:
+    description: 'Version of octoslash to download (e.g., v0.0.2 or latest)'
+    required: false
+    default: 'latest'
+  github-token:
+    description: 'GitHub token for authentication'
+    required: true
+    default: '${{ github.token }}'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Determine version
+      id: version
+      shell: bash
+      run: |
+        if [ "${{ inputs.version }}" == "latest" ]; then
+          echo "Getting latest version..."
+          VERSION=$(curl -s https://api.github.com/repos/sagikazarmark/octoslash/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "Latest version: $VERSION"
+        else
+          VERSION="${{ inputs.version }}"
+          echo "Using specified version: $VERSION"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Determine architecture
+      id: arch
+      shell: bash
+      run: |
+        ARCH=$(uname -m)
+        case $ARCH in
+          x86_64)
+            ARCH="x86_64"
+            ;;
+          aarch64|arm64)
+            ARCH="arm64"
+            ;;
+          i386|i686)
+            ARCH="i386"
+            ;;
+          *)
+            echo "Unsupported architecture: $ARCH"
+            exit 1
+            ;;
+        esac
+        echo "architecture=$ARCH" >> $GITHUB_OUTPUT
+        echo "Detected architecture: $ARCH"
+
+    - name: Download octoslash
+      shell: bash
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        ARCH="${{ steps.arch.outputs.architecture }}"
+
+        # Remove 'v' prefix from version for filename
+        VERSION_NO_V=${VERSION#v}
+
+        FILENAME="octoslash_Linux_${ARCH}.tar.gz"
+        DOWNLOAD_URL="https://github.com/sagikazarmark/octoslash/releases/download/${VERSION}/${FILENAME}"
+
+        echo "Downloading octoslash ${VERSION} for ${ARCH}..."
+        echo "URL: $DOWNLOAD_URL"
+
+        curl -L -o octoslash.tar.gz "$DOWNLOAD_URL"
+
+        if [ $? -ne 0 ]; then
+          echo "Failed to download octoslash"
+          exit 1
+        fi
+
+        echo "Extracting octoslash..."
+        tar -xzf octoslash.tar.gz
+
+        if [ ! -f octoslash ]; then
+          echo "octoslash binary not found after extraction"
+          exit 1
+        fi
+
+        chmod +x octoslash
+        echo "octoslash downloaded and extracted successfully"
+
+    - name: Run octoslash
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        echo "Running octoslash..."
+        ./octoslash
+
+branding:
+  icon: 'slash'
+  color: 'blue'

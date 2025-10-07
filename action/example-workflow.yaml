@@ -1,0 +1,46 @@
+name: Octoslash Example Workflow
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  octoslash-latest:
+    name: Run Octoslash (Latest Version)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Octoslash with latest version
+        uses: ./action
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  octoslash-specific-version:
+    name: Run Octoslash (Specific Version)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Octoslash with specific version
+        uses: ./action
+        with:
+          version: 'v0.0.2'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  octoslash-with-custom-token:
+    name: Run Octoslash (Custom Token)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Octoslash with custom token
+        uses: ./action
+        with:
+          version: 'latest'
+          github-token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
