@@ -13,6 +13,7 @@
   packages = with pkgs; [
     just
     golangci-lint
+    semver-tool
   ];
 
   profiles = {
