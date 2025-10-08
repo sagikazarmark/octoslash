@@ -13,6 +13,14 @@
   packages = with pkgs; [
     just
     golangci-lint
-    goreleaser
   ];
+
+  profiles = {
+    release.module = {
+      packages = with pkgs; [
+        goreleaser
+        cosign
+      ];
+    };
+  };
 }

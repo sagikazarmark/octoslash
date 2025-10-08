@@ -30,5 +30,8 @@ archives:
       - goos: windows
         formats: [zip]
 
+checksum:
+  name_template: "checksums.txt"
+
 changelog:
   use: github-native
