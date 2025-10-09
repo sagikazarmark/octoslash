@@ -35,8 +35,14 @@ func (p CommandProvider) NewCommand(event github.IssueCommentEvent) *cobra.Comma
 
 	rootCmd.AddCommand(
 		NewCloseCommand(event, p.Client, p.Logger),
+
 		NewAddLabelCommand(event, p.Client, p.Logger),
 		NewRemoveLabelCommand(event, p.Client, p.Logger),
+
+		NewAssignCommand(event, p.Client, p.Logger),
+		NewSelfAssignCommand(event, p.Client, p.Logger),
+		NewUnassignCommand(event, p.Client, p.Logger),
+		NewSelfUnassignCommand(event, p.Client, p.Logger),
 	)
 
 	return rootCmd
