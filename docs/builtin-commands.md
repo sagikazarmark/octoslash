@@ -14,7 +14,9 @@ Close an issue or pull request with an optional reason.
 
 **Required Permission**: `Close` action on the resource
 
-## `/label <label>`
+## `/add-label <label>`
+
+**Aliases:** `label`
 
 Add a label to an issue or pull request.
 
