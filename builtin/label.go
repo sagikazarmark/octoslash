@@ -65,9 +65,10 @@ func newAddLabelCommand(
 	handler commandHandler[AddLabel],
 ) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "label",
-		Short: "Label an issue or pull request",
-		Args:  cobra.ExactArgs(1),
+		Use:     "add-label",
+		Aliases: []string{"label"},
+		Short:   "Label an issue or pull request",
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			command := AddLabel{
 				Repo:  event.GetRepo(),
