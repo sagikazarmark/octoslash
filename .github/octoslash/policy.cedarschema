@@ -31,3 +31,19 @@ action RemoveLabel appliesTo {
     resource: [Issue, PullRequest],
     context: {}
 };
+
+action Assign appliesTo {
+    principal: User,
+    resource: [Issue, PullRequest],
+    context: {
+        assignee: String,
+    }
+};
+
+action Unassign appliesTo {
+    principal: User,
+    resource: [Issue, PullRequest],
+    context: {
+        assignee: String,
+    }
+};
