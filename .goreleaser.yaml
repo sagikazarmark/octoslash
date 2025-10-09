@@ -35,3 +35,6 @@ checksum:
 
 changelog:
   use: github-native
+
+release:
+  prerelease: auto
