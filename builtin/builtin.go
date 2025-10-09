@@ -1,6 +1,7 @@
 package builtin
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/google/go-github/v74/github"
@@ -34,9 +35,13 @@ func (p CommandProvider) NewCommand(event github.IssueCommentEvent) *cobra.Comma
 
 	rootCmd.AddCommand(
 		NewCloseCommand(event, p.Client, p.Logger),
-		NewLabelCommand(event, p.Client, p.Logger),
+		NewAddLabelCommand(event, p.Client, p.Logger),
 		NewRemoveLabelCommand(event, p.Client, p.Logger),
 	)
 
 	return rootCmd
+}
+
+type commandHandler[T any] interface {
+	Handle(ctx context.Context, command T) error
 }

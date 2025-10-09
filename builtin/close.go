@@ -8,59 +8,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCloseCommand(
-	event github.IssueCommentEvent,
-	client *github.Client,
-	logger *slog.Logger,
-) *cobra.Command {
-	command := closeCommand{
-		event:  event,
-		client: client,
-		logger: logger,
-	}
-
-	cmd := &cobra.Command{
-		Use:   "close",
-		Short: "Close an issue or pull request",
-		Args:  cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var reason string
-			if len(args) > 0 {
-				reason = args[0]
-			}
-
-			return command.run(cmd.Context(), reason)
-		},
-	}
-
-	return cmd
+// Close represents a command to close an issue or pull request.
+type Close struct {
+	Repo   *github.Repository
+	Issue  *github.Issue
+	Reason string
 }
 
-type closeCommand struct {
-	event  github.IssueCommentEvent
-	client *github.Client
-	logger *slog.Logger
+// CloseHandler handles the [Close] command.
+type CloseHandler struct {
+	Client *github.Client
+	Logger *slog.Logger
 }
 
-func (c closeCommand) run(ctx context.Context, reason string) error {
-	issue := c.event.GetIssue()
-	repo := c.event.GetRepo()
+// Handle executes the [Close] command.
+func (h CloseHandler) Handle(ctx context.Context, cmd Close) error {
+	issue := cmd.Issue
+	repo := cmd.Repo
 
-	c.logger.Info(
+	h.Logger.Info(
 		"closing issue",
 		slog.Int("number", issue.GetNumber()),
-		slog.String("reason", reason),
+		slog.String("reason", cmd.Reason),
 	)
 
 	req := &github.IssueRequest{
 		State: github.Ptr("closed"),
 	}
 
-	if reason != "" {
-		req.StateReason = github.Ptr(reason)
+	if cmd.Reason != "" {
+		req.StateReason = github.Ptr(cmd.Reason)
 	}
 
-	_, _, err := c.client.Issues.Edit(
+	_, _, err := h.Client.Issues.Edit(
 		ctx,
 		repo.GetOwner().GetLogin(),
 		repo.GetName(),
@@ -72,4 +52,47 @@ func (c closeCommand) run(ctx context.Context, reason string) error {
 	}
 
 	return nil
+}
+
+// NewCloseCommand creates a new Cobra command to close an issue or pull request.
+//
+// It integrates the [Close] command into the default command dispatcher.
+func NewCloseCommand(
+	event github.IssueCommentEvent,
+	client *github.Client,
+	logger *slog.Logger,
+) *cobra.Command {
+	handler := CloseHandler{
+		Client: client,
+		Logger: logger,
+	}
+
+	return newCloseCommand(event, handler)
+}
+
+func newCloseCommand(
+	event github.IssueCommentEvent,
+	handler commandHandler[Close],
+) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "close",
+		Short: "Close an issue or pull request",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var reason string
+			if len(args) > 0 {
+				reason = args[0]
+			}
+
+			command := Close{
+				Repo:   event.GetRepo(),
+				Issue:  event.GetIssue(),
+				Reason: reason,
+			}
+
+			return handler.Handle(cmd.Context(), command)
+		},
+	}
+
+	return cmd
 }
