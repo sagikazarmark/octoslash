@@ -12,7 +12,7 @@ Close an issue or pull request with an optional reason.
 /close not_planned
 ```
 
-**Required Permission**: `Close` action on the resource
+**Required Permission**: `close` action on the resource
 
 ## `/add-label <label>`
 
@@ -25,7 +25,7 @@ Add a label to an issue or pull request.
 /label "needs review"
 ```
 
-**Required Permission**: `Label` action on the resource
+**Required Permission**: `add-label` action on the resource
 
 ## `/remove-label <label>`
 
@@ -36,7 +36,7 @@ Remove a label from an issue or pull request.
 /remove-label "needs review"
 ```
 
-**Required Permission**: `RemoveLabel` action on the resource
+**Required Permission**: `remove-label` action on the resource
 
 ## `/assign <username>`
 
@@ -47,7 +47,7 @@ Assign an issue or pull request to a specific user.
 /assign "jane.smith"
 ```
 
-**Required Permission**: `Assign` action on the resource
+**Required Permission**: `assign` action on the resource
 
 ## `/self-assign`
 
@@ -57,7 +57,7 @@ Assign an issue or pull request to yourself (the comment author).
 /self-assign
 ```
 
-**Required Permission**: `Assign` action on the resource
+**Required Permission**: `self-assign` action on the resource
 
 ## `/unassign <username>`
 
@@ -68,7 +68,7 @@ Unassign a specific user from an issue or pull request.
 /unassign "jane.smith"
 ```
 
-**Required Permission**: `Unassign` action on the resource
+**Required Permission**: `unassign` action on the resource
 
 ## `/self-unassign`
 
@@ -78,4 +78,4 @@ Unassign yourself (the comment author) from an issue or pull request.
 /self-unassign
 ```
 
-**Required Permission**: `Unassign` action on the resource
+**Required Permission**: `self-unassign` action on the resource
