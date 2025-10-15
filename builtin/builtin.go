@@ -43,6 +43,8 @@ func (p CommandProvider) NewCommand(event github.IssueCommentEvent) *cobra.Comma
 		NewSelfAssignCommand(event, p.Client, p.Logger),
 		NewUnassignCommand(event, p.Client, p.Logger),
 		NewSelfUnassignCommand(event, p.Client, p.Logger),
+
+		NewWorkflowRunCommand(event, p.Client, p.Logger),
 	)
 
 	return rootCmd
