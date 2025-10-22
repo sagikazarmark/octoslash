@@ -3,7 +3,7 @@ module github.com/sagikazarmark/octoslash
 go 1.25.0
 
 require (
-	github.com/cedar-policy/cedar-go v1.2.6
+	github.com/cedar-policy/cedar-go v1.2.8
 	github.com/google/go-github/v74 v74.0.0
 	github.com/sagikazarmark/go-github-fs v0.1.0
 	github.com/sagikazarmark/seq v0.1.0
