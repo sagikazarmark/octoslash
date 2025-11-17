@@ -86,7 +86,7 @@ Map GitHub users to roles in `principals.json`:
 ```
 
 > [!NOTE]
-> For the moment, repository memebers also have to be added as principals to assign roles to them.
+> For the moment, repository members also have to be added as principals to assign roles to them.
 >
 > See [#9](https://github.com/octoslash/octoslash/issues/9) for details.
 
